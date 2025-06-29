@@ -1,17 +1,10 @@
-
-import { Download, RotateCcw, Play, CheckCircle } from 'lucide-react';
+import { Download, RotateCcw, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-
-interface GenerationJob {
-  id: string;
-  status: 'processing' | 'completed' | 'failed';
-  videoUrl?: string;
-  createdAt: string;
-}
+import { Generation } from '@/lib/api';
 
 interface ResultViewProps {
-  job: GenerationJob;
+  job: Generation;
   onDownload: () => void;
   onStartNew: () => void;
 }
@@ -19,7 +12,6 @@ interface ResultViewProps {
 const ResultView = ({ job, onDownload, onStartNew }: ResultViewProps) => {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-      {/* Success Message */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3">
           <CheckCircle className="w-8 h-8 text-green-400" />
@@ -28,28 +20,30 @@ const ResultView = ({ job, onDownload, onStartNew }: ResultViewProps) => {
         <p className="text-muted-foreground">Your lip-sync video is ready. Preview it below and download when satisfied.</p>
       </div>
 
-      {/* Video Player */}
       <Card className="glass-morphism neon-glow border-0 overflow-hidden">
         <CardContent className="p-0">
           <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-            {/* Placeholder for actual video player */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
-              <div className="text-center space-y-4">
-                <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto hover:bg-white/20 transition-colors cursor-pointer neon-glow">
-                  <Play className="w-8 h-8 text-white ml-1" />
-                </div>
-                <p className="text-white/80">Click to play your generated video</p>
-                <p className="text-sm text-white/60">Duration: 0:45 • Size: 12.3 MB</p>
+            {job.output_url ? (
+              <video
+                src={job.output_url}
+                controls
+                className="w-full h-full object-contain"
+              >
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
+                <p className="text-white/80">Video preview is not available.</p>
               </div>
-            </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
         <Button
           onClick={onDownload}
+          disabled={!job.output_url}
           size="lg"
           className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white neon-glow font-semibold transition-all duration-300 hover:scale-105"
         >
@@ -68,7 +62,6 @@ const ResultView = ({ job, onDownload, onStartNew }: ResultViewProps) => {
         </Button>
       </div>
 
-      {/* Generation Details */}
       <Card className="glass-morphism border-accent/20">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Generation Details</h3>
@@ -79,11 +72,11 @@ const ResultView = ({ job, onDownload, onStartNew }: ResultViewProps) => {
             </div>
             <div>
               <p className="text-muted-foreground">Model Used</p>
-              <p>LipSync-2</p>
+              <p>{job.model}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Generated At</p>
-              <p>{new Date(job.createdAt).toLocaleString()}</p>
+              <p>{new Date(job.created_at).toLocaleString()}</p>
             </div>
           </div>
         </CardContent>
